@@ -1,7 +1,10 @@
 import pandas as pd
+import os
 
 
 def convert_activpal3_csv(data):
+    if isinstance(data, str) and os.path.isfile(data):
+        data = pd.read_csv(data, header=None)
     output = data.copy(deep=True)
     output = output.iloc[:, 0:4]
     output.columns = ['HEADER_TIME_STAMP', 'X', 'Y', 'Z']
@@ -14,6 +17,5 @@ def convert_activpal3_csv(data):
 
 if __name__ == '__main__':
     import sys
-    d = pd.read_csv(sys.argv[1], header=None)
-    o = convert_activpal3_csv(d)
+    o = convert_activpal3_csv(sys.argv[1])
     print(o.head())

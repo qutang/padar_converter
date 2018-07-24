@@ -16,11 +16,9 @@ MHEALTH_FILEPATH_PATTERN = r'(\w+)[\/\\]{1}(?:(?:MasterSynced[\/\\]{1})|(?:Deriv
 
 def is_mhealth_filepath(filepath):
     filepath = os.path.abspath(filepath)
-    print(filepath)
     matched = re.search(
         MHEALTH_FILEPATH_PATTERN,
         filepath)
-    print(matched)
     return matched is not None
 
 
@@ -117,3 +115,5 @@ def get_file_timestamp(filepath):
 def get_timezone_name(filepath):
     dt = get_file_timestamp(filepath)
     return dt.strftime('%Z')
+
+
