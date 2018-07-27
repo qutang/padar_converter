@@ -1,6 +1,7 @@
 import re
 import os
-from datetime import datetime
+import datetime
+import numpy as np
 
 CAMELCASE_PATTERN = r'(?:[A-Z][A-Za-z0-9]+)+'
 VERSIONCODE_PATTERN = r'(?:NA|[0-9x]+)'
@@ -108,12 +109,40 @@ def get_file_timestamp(filepath):
     assert is_mhealth_filename(filepath)
     filename = os.path.basename(filepath)
     timestamp_str = filename.split('.')[-3]
-    timestamp_str = timestamp_str.replace('M', '-').replace('P', '+')
-    return datetime.strptime(timestamp_str, '%Y-%m-%d-%H-%M-%S-%f-%z')
+    timestamp_str = timestamp_str[:-6]
+    return datetime.datetime.strptime(timestamp_str, '%Y-%m-%d-%H-%M-%S-%f')
+
+
+def get_session_start_time(filepath, filepaths):
+    pid = get_pid(filepath)
+    smallest = datetime.datetime.now()
+    for path in filepaths:
+        if get_pid(path) == pid:
+            timestamp = get_file_timestamp(path)
+            if timestamp < smallest:
+                smallest = timestamp
+    smallest = smallest.replace(microsecond=0, second=0, minute=0)
+    return smallest
+
+
+def get_session_end_time(filepath, filepaths):
+    pid = get_pid(filepath)
+    largest = datetime.datetime.fromtimestamp(100000)
+    for path in filepaths:
+        if get_pid(path) == pid:
+            timestamp = get_file_timestamp(path)
+            if timestamp > largest:
+                largest = timestamp
+    largest = largest.replace(microsecond=0, second=0,
+                              minute=0) + datetime.timedelta(hours=1)
+    return largest
+
+
+def get_timezone(filepath):
+    dt = get_file_timestamp(filepath)
+    return dt.tzinfo
 
 
 def get_timezone_name(filepath):
     dt = get_file_timestamp(filepath)
     return dt.strftime('%Z')
-
-

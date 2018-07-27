@@ -120,7 +120,9 @@ def test_get_sensor_type():
 
     for test_case in correct_test_cases:
         print(test_case)
-        assert dataset.get_sensor_type(test_case) == 'ActigraphGT9X' or dataset.get_sensor_type(test_case) == 'SPADESInLab'
+        assert dataset.get_sensor_type(
+            test_case) == 'ActigraphGT9X' or dataset.get_sensor_type(test_case) == 'SPADESInLab'
+
 
 def test_get_data_type():
     sensor_test_cases = [
@@ -134,9 +136,10 @@ def test_get_data_type():
 
     for test_case in sensor_test_cases:
         assert dataset.get_data_type(test_case) == 'AccelerationCalibrated'
-    
+
     for test_case in annotation_test_cases:
         assert dataset.get_data_type(test_case) is None
+
 
 def test_get_version_code():
     sensor_test_cases = [
@@ -150,11 +153,11 @@ def test_get_version_code():
 
     for test_case in sensor_test_cases:
         assert dataset.get_version_code(test_case) == 'NA'
-    
+
     for test_case in annotation_test_cases:
         assert dataset.get_version_code(test_case) is None
 
-    
+
 def test_get_sid():
     sensor_test_cases = [
         'ActigraphGT9X-AccelerationCalibrated-NA.TAS1E23150152-AccelerationCalibrated.2015-11-19-16-00-00-000-M0500.sensor.csv',
@@ -167,7 +170,7 @@ def test_get_sid():
 
     for test_case in sensor_test_cases:
         assert dataset.get_sid(test_case) == 'TAS1E23150152'
-    
+
     for test_case in annotation_test_cases:
         assert dataset.get_sid(test_case).lower() == 'diego'
 
@@ -184,7 +187,7 @@ def test_get_file_type():
 
     for test_case in sensor_test_cases:
         assert dataset.get_file_type(test_case) == 'sensor'
-    
+
     for test_case in annotation_test_cases:
         assert dataset.get_file_type(test_case) == 'annotation'
 
@@ -201,10 +204,13 @@ def test_get_file_timestamp():
     ]
 
     for test_case in sensor_test_cases:
-        assert dataset.get_file_timestamp(test_case).timestamp() == 1447966800.0
-    
+        assert dataset.get_file_timestamp(
+            test_case).timestamp() == 1447966800.0
+
     for test_case in annotation_test_cases:
-        assert dataset.get_file_timestamp(test_case).timestamp() == 1447966800.0
+        assert dataset.get_file_timestamp(
+            test_case).timestamp() == 1447966800.0
+
 
 def test_get_timezone_name():
     from datetime import datetime
@@ -219,6 +225,23 @@ def test_get_timezone_name():
 
     for test_case in sensor_test_cases:
         assert dataset.get_timezone_name(test_case) == 'UTC-05:00'
-    
+
     for test_case in annotation_test_cases:
         assert dataset.get_timezone_name(test_case) == 'UTC-05:00'
+
+
+def test_get_session_times():
+    test_file_list = [
+        "./SPADES_1/MasterSynced/2015/09/24/14/ActigraphGT9X-AccelerationCalibrated-NA.TAS1E23150066-AccelerationCalibrated.2015-09-24-14-23-00-000-M0400.sensor.csv",
+        "./SPADES_1/MasterSynced/2015/09/24/16/ActigraphGT9X-AccelerationCalibrated-NA.TAS1E23150175-AccelerationCalibrated.2015-09-24-16-00-00-000-M0400.sensor.csv",
+        "./SPADES_10/MasterSynced/2015/12/07/18/ActigraphGT9X-AccelerationCalibrated-NA.TAS1E23150066-AccelerationCalibrated.2015-12-07-18-00-00-000-M0500.sensor.csv",
+        "./SPADES_10/MasterSynced/2015/12/07/19/ActigraphGT9X-AccelerationCalibrated-NA.TAS1E23150075-AccelerationCalibrated.2015-12-07-18-00-00-000-M0500.sensor.csv",
+        "./SPADES_11/MasterSynced/2015/12/11/17/ActigraphGT9X-AccelerationCalibrated-NA.TAS1E23150075-AccelerationCalibrated.2015-12-11-17-00-00-000-M0500.sensor.csv",
+        "./SPADES_11/MasterSynced/2015/12/11/18/ActigraphGT9X-AccelerationCalibrated-NA.TAS1E23150084-AccelerationCalibrated.2015-12-11-17-00-00-000-M0500.sensor.csv",
+        "./SPADES_12/MasterSynced/2015/12/14/11/ActigraphGT9X-AccelerationCalibrated-NA.TAS1E23150075-AccelerationCalibrated.2015-12-14-11-15-00-000-M0500.sensor.csv",
+        "./SPADES_12/MasterSynced/2015/12/15/11/ActigraphGT9X-AccelerationCalibrated-NA.TAS1E23150084-AccelerationCalibrated.2015-12-14-11-15-00-000-M0500.sensor.csv"
+    ]
+    start_time = dataset.get_session_start_time(test_file_list[0], test_file_list)
+    end_time = dataset.get_session_end_time(test_file_list[0], test_file_list)
+    assert start_time.strftime('%Y-%m-%d-%H-%M-%S') == '2015-09-24-14-23-00'
+    assert end_time.strftime('%Y-%m-%d-%H-%M-%S') == '2015-09-24-16-00-00'
