@@ -2,6 +2,8 @@ import re
 import os
 import datetime
 import numpy as np
+import pandas as pd
+from glob import glob
 
 CAMELCASE_PATTERN = r'(?:[A-Z][A-Za-z0-9]+)+'
 VERSIONCODE_PATTERN = r'(?:NA|[0-9x]+)'
@@ -29,6 +31,34 @@ def is_mhealth_flat_filepath(filepath):
         os.path.abspath(filepath)
     )
     return matched is not None
+
+
+def get_mhealth_root(filepath):
+    assert is_mhealth_filepath(filepath) or is_mhealth_flat_filepath(filepath)
+    pid = get_pid(filepath)
+    return filepath.split(pid)[0]
+
+
+def get_pid_root(filepath):
+    assert is_mhealth_filepath(filepath) or is_mhealth_flat_filepath(filepath)
+    pid = get_pid(filepath)
+    return os.path.join(filepath.split(pid)[0], pid)
+
+
+def find_location_mapping(filepath):
+    pid_root = get_pid_root(filepath)
+    candicates = glob(os.path.join(
+        pid_root, '**', 'location_mapping.csv'), recursive=True)
+    if len(candicates) == 1:
+        return candicates[0]
+    else:
+        mhealth_root = get_mhealth_root(filepath)
+        result = os.path.join(
+            mhealth_root, 'DerivedCrossParticipants', 'location_mapping.csv')
+        if os.path.exists(result):
+            return result
+        else:
+            return False
 
 
 def is_mhealth_filename(filepath):
@@ -146,3 +176,34 @@ def get_timezone(filepath):
 def get_timezone_name(filepath):
     dt = get_file_timestamp(filepath)
     return dt.strftime('%Z')
+
+
+def get_init_placement(filepath, mapping_file):
+    assert is_mhealth_filename(filepath)
+    mapping = pd.read_csv(mapping_file)
+    sid = get_sid(filepath)
+    pid = get_pid(filepath)
+    loc = mapping.loc[(mapping['PID'] == pid) & (
+        mapping['SENSOR_ID'] == sid), 'LOCATION'].values[0]
+    return loc
+
+
+def auto_init_placement(filepath):
+    assert is_mhealth_filename(filepath)
+    mapping_file = find_location_mapping(filepath)
+    if mapping_file:
+        mapping = pd.read_csv(mapping_file)
+    else:
+        return None
+    sid = get_sid(filepath)
+    pid = get_pid(filepath)
+    if 'PID' in mapping:
+        mask = (mapping['PID'] == pid) & (mapping['SENSOR_ID'] == sid)
+    else:
+        mask = mapping['SENSOR_ID'] == sid
+    loc = mapping.loc[mask, 'LOCATION']
+    if loc.empty:
+        return None
+    else:
+        return loc.values[0]
+    return loc
