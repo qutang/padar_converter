@@ -25,9 +25,15 @@ def convert_gpx(gpx_data):
     csv = pd.concat(rows)
     return csv
 
+
 def convert_csv(gps_csv_data):
     output = pd.DataFrame()
-    output['HEADER_TIME_STAMP'] = gps_csv_data['LOCAL DATE'].str.cat(gps_csv_data['LOCAL TIME'], sep=' ').str.cat(gps_csv_data['MS'].map(lambda x: str(x).strip()), sep = '.').astype('datetime64[ms]').map(lambda x: x.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]).values
+    output['HEADER_TIME_STAMP'] = gps_csv_data['LOCAL DATE']
+    .str.cat(gps_csv_data['LOCAL TIME'], sep=' ')
+    .str.cat(gps_csv_data['MS'].map(
+        lambda x: str(x).strip()), sep='.')
+    .astype('datetime64[ms]')
+    .map(lambda x: x.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]).values
     output['START_TIME'] = output['HEADER_TIME_STAMP']
     output['LATITUDE'] = gps_csv_data['LATITUDE']
     output['LONGITUDE'] = gps_csv_data['LONGITUDE']

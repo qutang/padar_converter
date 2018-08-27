@@ -64,7 +64,8 @@ def find_location_mapping(filepath):
 def is_mhealth_filename(filepath):
     filename = os.path.basename(filepath)
 
-    sensor_filename_pattern = '^' + CAMELCASE_PATTERN + '\-' + CAMELCASE_PATTERN + \
+    sensor_filename_pattern = '^' + CAMELCASE_PATTERN + '\-' +
+    CAMELCASE_PATTERN + \
         '\-' + VERSIONCODE_PATTERN + '\.' + \
         SID_PATTERN + '\-' + CAMELCASE_PATTERN + '\.' + \
         FILE_TIMESTAMP_PATTERN + '\.sensor\.csv$'

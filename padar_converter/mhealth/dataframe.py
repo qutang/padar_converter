@@ -8,12 +8,13 @@ def append_times(df, st, et):
     return df
 
 
-def segment(df, start_time=None, stop_time=None, start_time_col=0, stop_time_col=None):
-    if stop_time_col == None:
+def segment(df, start_time=None, stop_time=None, start_time_col=0,
+            stop_time_col=None):
+    if stop_time_col is None:
         stop_time_col = start_time_col
-    if start_time == None:
+    if start_time is None:
         start_time = df.iloc[0, start_time_col]
-    if stop_time == None:
+    if stop_time is None:
         stop_time = df.iloc[-1, stop_time_col]
 
     if start_time_col == stop_time_col:
@@ -36,7 +37,8 @@ def segment_sensor(df, start_time=None, stop_time=None):
 
 
 def segment_annotation(df, start_time=None, stop_time=None):
-    return segment(df, start_time=start_time, stop_time=stop_time, start_time_col=1, stop_time_col=2)
+    return segment(df, start_time=start_time, stop_time=stop_time,
+                   start_time_col=1, stop_time_col=2)
 
 
 def start_time(df, start_time_col=0):
@@ -47,7 +49,8 @@ def end_time(df, stop_time_col=0):
     return df.iloc[-1, stop_time_col]
 
 
-def append_edges(df, before_df=None, after_df=None, duration=120, start_time_col=0, stop_time_col=0):
+def append_edges(df, before_df=None, after_df=None, duration=120,
+                 start_time_col=0, stop_time_col=0):
     lbound_time = df.iloc[0, start_time_col]
     rbound_time = df.iloc[-1, stop_time_col]
 
