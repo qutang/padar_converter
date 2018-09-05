@@ -62,8 +62,11 @@ class IdleSleepModeConverter:
                 return 0
             indices = (self._converted.index >= st) & (
                 self._converted.index < et)
-            self._converted[indices] = to_fill.values
-            return is_ism.shape[0]
+            if np.any(indices):
+                self._converted[indices] = to_fill.values
+                return is_ism.shape[0]
+            else:
+                return 0
         # there are multiple seconds in ISM mode but not the entire 10s
         elif np.any(is_ism == True):
             is_ism = is_ism[is_ism.values]
@@ -75,8 +78,11 @@ class IdleSleepModeConverter:
             indices = (self._converted.index >= st) & (
                 self._converted.index < et)
             # use the first N seconds' non-ISM mode data to fill
-            self._converted[indices] = to_fill.iloc[:np.sum(indices), :].values
-            return is_ism.shape[0]
+            if np.any(indices):
+                self._converted[indices] = to_fill.iloc[:np.sum(indices), :].values
+                return is_ism.shape[0]
+            else:
+                return 0
         else:
             return 0
 
