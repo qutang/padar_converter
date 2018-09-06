@@ -12,6 +12,7 @@ class IdleSleepModeConverter:
             self._before_is_ism = init_is_ism
         else:
             self._before_is_ism = pd.DataFrame()
+        self._before_10s = pd.DataFrame()
         self._converted = pd.DataFrame()
 
     def get_ism(self):
@@ -23,9 +24,17 @@ class IdleSleepModeConverter:
         if not fills.empty:
             fill_et = fills.index[-1] + pd.Timedelta(1, unit='s')
             fill_st = fill_et - pd.Timedelta(10, unit='s')
-            self._current_fill = df[(df.index >= fill_st)
+            current_fill = df[(df.index >= fill_st)
                                     & (df.index < fill_et)]
+            if current_fill.index[-1] - current_fill.index[0] > pd.Timedelta(9, unit='s'):
+                self._current_fill = current_fill
         return self._current_fill
+
+    def get_last_10s(self):
+        df = self._df.set_index('HEADER_TIME_STAMP')
+        et = df.index[-1] + pd.Timedelta(1, unit='s')
+        st = et - pd.Timedelta(10, unit='s')
+        return df[(df.index >= st) & (df.index < et)].reset_index(drop=False)
 
     def detect_ism(self):
         self._current_is_ism = self._df.groupby(pd.TimeGrouper(
@@ -87,7 +96,7 @@ class IdleSleepModeConverter:
             return 0
 
     def run(self, df, update=True):
-        self._df = df
+        self._df = pd.concat([self._before_10s, df], axis=0)
         self._converted = df.copy(deep=True)
         self._converted = self._converted.set_index(self._converted.columns[0])
 
@@ -99,6 +108,7 @@ class IdleSleepModeConverter:
 
         if update:
             self._before_is_ism = self._current_is_ism
+            self._before_10s = self.get_last_10s()
 
         return self
 
