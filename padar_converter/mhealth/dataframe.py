@@ -8,6 +8,19 @@ def append_times(df, st, et):
     return df
 
 
+def offset(df, offset_in_secs, start_time_col=0, stop_time_col=None):
+    df_copy = df.copy(deep=True)
+    if start_time_col is not None:
+        start_time_col = df_copy.columns[start_time_col]
+        df_copy[start_time_col] = df_copy[start_time_col] + \
+            pd.Timedelta(offset_in_secs, unit='s')
+    if stop_time_col is not None:
+        stop_time_col = df_copy.columns[stop_time_col]
+        df_copy[stop_time_col] = df_copy[stop_time_col] + \
+            pd.Timedelta(offset_in_secs, unit='s')
+    return df_copy
+
+
 def segment(df, start_time=None, stop_time=None, start_time_col=0,
             stop_time_col=None):
     if stop_time_col is None:

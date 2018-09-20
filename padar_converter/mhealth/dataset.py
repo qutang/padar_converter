@@ -61,11 +61,53 @@ def find_location_mapping(filepath):
             return False
 
 
+def find_offset_mapping(filepath):
+    pid_root = get_pid_root(filepath)
+    candicates = glob(os.path.join(
+        pid_root, '**', 'offset_mapping.csv'), recursive=True)
+    if len(candicates) == 1:
+        return candicates[0]
+    else:
+        mhealth_root = get_mhealth_root(filepath)
+        result = os.path.join(
+            mhealth_root, 'DerivedCrossParticipants', 'offset_mapping.csv')
+        if os.path.exists(result):
+            return result
+        else:
+            return False
+
+
+def find_pid_exceptions(filepath):
+    mhealth_root = get_mhealth_root(filepath)
+    result = os.path.join(
+        mhealth_root, 'DerivedCrossParticipants', 'pid_exceptions.csv')
+    if os.path.exists(result):
+        return result
+    else:
+        return False
+
+
+def find_orientation_corrections(filepath):
+    pid_root = get_pid_root(filepath)
+    candicates = glob(os.path.join(
+        pid_root, '**', 'orientation_corrections.csv'), recursive=True)
+    if len(candicates) == 1:
+        return candicates[0]
+    else:
+        mhealth_root = get_mhealth_root(filepath)
+        result = os.path.join(
+            mhealth_root, 'DerivedCrossParticipants', 'orientation_corrections.csv')
+        if os.path.exists(result):
+            return result
+        else:
+            return False
+
+
 def is_mhealth_filename(filepath):
     filename = os.path.basename(filepath)
 
-    sensor_filename_pattern = '^' + CAMELCASE_PATTERN + '\-' +
-    CAMELCASE_PATTERN + \
+    sensor_filename_pattern = '^' + CAMELCASE_PATTERN + '\-' + \
+        CAMELCASE_PATTERN + \
         '\-' + VERSIONCODE_PATTERN + '\.' + \
         SID_PATTERN + '\-' + CAMELCASE_PATTERN + '\.' + \
         FILE_TIMESTAMP_PATTERN + '\.sensor\.csv$'
