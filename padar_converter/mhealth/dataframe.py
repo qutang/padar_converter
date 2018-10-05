@@ -35,13 +35,17 @@ def segment(df, start_time=None, stop_time=None, start_time_col=0,
             df.iloc[:, stop_time_col] < stop_time)
         return df[mask].copy(deep=True)
     else:
-        mask = (df.iloc[:, start_time_col] < stop_time) & (
-            df.iloc[:, stop_time_col] > start_time)
+        mask = (df.iloc[:, start_time_col] <= stop_time) & (
+            df.iloc[:, stop_time_col] >= start_time)
         subset_df = df[mask].copy(deep=True)
-        subset_df[subset_df.iloc[:, start_time_col] <
-                  start_time].iloc[:, start_time_col] = start_time
-        subset_df[subset_df.iloc[:, stop_time_col] >
-                  stop_time].iloc[:, stop_time_col] = stop_time
+
+        start_time_col = df.columns[start_time_col]
+        stop_time_col = df.columns[stop_time_col]
+
+        subset_df.loc[subset_df.loc[:, start_time_col] <
+                  start_time,start_time_col] = start_time
+        subset_df.loc[subset_df.loc[:, stop_time_col] >
+                  stop_time,stop_time_col] = stop_time
         return subset_df
 
 

@@ -136,6 +136,8 @@ def get_pid(filepath):
         return None
     return matched.group(1) if matched is not None else None
 
+def get_pids(root):
+    return list(filter(lambda name: 'SPADES' in name, os.listdir(root)))
 
 def get_sensor_type(filepath):
     assert is_mhealth_filename(filepath)
