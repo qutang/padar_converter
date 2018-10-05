@@ -14,6 +14,7 @@ def load_annotation(filepath):
         return None
     result = pd.read_csv(filepath, parse_dates=[0, 1, 2],
                          infer_datetime_format=True)
+    result = result[['HEADER_TIME_STAMP', 'START_TIME', 'STOP_TIME', 'LABEL_NAME']]
     return result
 
 def load_offset_mapping(filepath):
