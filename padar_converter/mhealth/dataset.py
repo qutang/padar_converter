@@ -4,6 +4,7 @@ import datetime
 import numpy as np
 import pandas as pd
 from glob import glob
+from . import fileio
 
 CAMELCASE_PATTERN = r'(?:[A-Z][A-Za-z0-9]+)+'
 VERSIONCODE_PATTERN = r'(?:NA|[0-9x]+)'
@@ -77,6 +78,20 @@ def find_offset_mapping(filepath):
             return False
 
 
+def get_offset(filepath, offset_column):
+    offset_mapping_file = find_offset_mapping(filepath)
+    pid = get_pid(filepath)
+    if bool(offset_mapping_file):
+        offset_mapping = fileio.load_offset_mapping(offset_mapping_file)
+        offset_in_secs = float(
+            offset_mapping.loc[offset_mapping.iloc[:, 0] == pid,
+                               offset_mapping.columns[offset_column]].values[0]
+        )
+    else:
+        offset_in_secs = 0
+    return offset_in_secs
+
+
 def find_pid_exceptions(filepath):
     mhealth_root = get_mhealth_root(filepath)
     result = os.path.join(
@@ -85,6 +100,15 @@ def find_pid_exceptions(filepath):
         return result
     else:
         return False
+
+
+def is_pid_included(filepath):
+    exceptions = pd.read_csv(find_pid_exceptions(filepath))
+    pid = get_pid(filepath)
+    if np.any(pid == exceptions['PID'].values):
+        return False
+    else:
+        return True
 
 
 def find_orientation_corrections(filepath):
@@ -96,11 +120,32 @@ def find_orientation_corrections(filepath):
     else:
         mhealth_root = get_mhealth_root(filepath)
         result = os.path.join(
-            mhealth_root, 'DerivedCrossParticipants', 'orientation_corrections.csv')
+            mhealth_root, 'DerivedCrossParticipants',
+            'orientation_corrections.csv')
         if os.path.exists(result):
             return result
         else:
             return False
+
+
+def get_orientation_correction(filepath):
+    orientation_corrections_file = find_orientation_corrections(
+        filepath)
+    pid = get_pid(filepath)
+    if bool(orientation_corrections_file):
+        orientation_corrections = fileio.load_orientation_corrections(
+            orientation_corrections_file)
+        orientation_correction = orientation_corrections.loc[
+            orientation_corrections.iloc[:, 0] == pid,
+            orientation_corrections.columns[3:6]
+        ]
+        if orientation_correction.empty:
+            orientation_correction = np.array(['x', 'y', 'z'])
+        else:
+            orientation_correction = orientation_correction.values[0]
+    else:
+        orientation_correction = np.array(['x', 'y', 'z'])
+    return orientation_correction
 
 
 def is_mhealth_filename(filepath):
@@ -136,8 +181,10 @@ def get_pid(filepath):
         return None
     return matched.group(1) if matched is not None else None
 
+
 def get_pids(root):
     return list(filter(lambda name: 'SPADES' in name, os.listdir(root)))
+
 
 def get_sensor_type(filepath):
     assert is_mhealth_filename(filepath)

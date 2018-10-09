@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 
 def append_times(df, st, et):
@@ -43,9 +44,9 @@ def segment(df, start_time=None, stop_time=None, start_time_col=0,
         stop_time_col = df.columns[stop_time_col]
 
         subset_df.loc[subset_df.loc[:, start_time_col] <
-                  start_time,start_time_col] = start_time
+                      start_time, start_time_col] = start_time
         subset_df.loc[subset_df.loc[:, stop_time_col] >
-                  stop_time,stop_time_col] = stop_time
+                      stop_time, stop_time_col] = stop_time
         return subset_df
 
 
@@ -64,6 +65,11 @@ def start_time(df, start_time_col=0):
 
 def end_time(df, stop_time_col=0):
     return df.iloc[-1, stop_time_col]
+
+
+def get_annotation_labels(df):
+    labels = df.iloc[:, 3].unique()
+    return np.sort(labels)
 
 
 def append_edges(df, before_df=None, after_df=None, duration=120,
