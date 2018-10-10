@@ -47,17 +47,17 @@ def get_pid_root(filepath):
 
 
 def find_location_mapping(filepath):
-    pid_root = get_pid_root(filepath)
-    candicates = glob(os.path.join(
-        pid_root, '**', 'location_mapping.csv'), recursive=True)
-    if len(candicates) == 1:
-        return candicates[0]
+    mhealth_root = get_mhealth_root(filepath)
+    result = os.path.join(
+        mhealth_root, 'DerivedCrossParticipants', 'location_mapping.csv')
+    if os.path.exists(result):
+        return result
     else:
-        mhealth_root = get_mhealth_root(filepath)
-        result = os.path.join(
-            mhealth_root, 'DerivedCrossParticipants', 'location_mapping.csv')
-        if os.path.exists(result):
-            return result
+        pid_root = get_pid_root(filepath)
+        candicates = glob(os.path.join(
+            pid_root, '**', 'location_mapping.csv'), recursive=True)
+        if len(candicates) == 1:
+            return candicates[0]
         else:
             return False
 
@@ -275,8 +275,11 @@ def get_init_placement(filepath, mapping_file):
     mapping = pd.read_csv(mapping_file)
     sid = get_sid(filepath)
     pid = get_pid(filepath)
-    loc = mapping.loc[(mapping['PID'] == pid) & (
-        mapping['SENSOR_ID'] == sid), 'LOCATION'].values[0]
+    pid_col = mapping.columns[0]
+    sid_col = mapping.columns[1]
+    placement_col = mapping.columns[2]
+    loc = mapping.loc[(mapping[pid_col] == pid) & (
+        mapping[sid_col] == sid), placement_col].values[0]
     return loc
 
 
@@ -289,11 +292,17 @@ def auto_init_placement(filepath):
         return None
     sid = get_sid(filepath)
     pid = get_pid(filepath)
-    if 'PID' in mapping:
-        mask = (mapping['PID'] == pid) & (mapping['SENSOR_ID'] == sid)
+
+    if len(mapping.columns) == 3:
+        pid_col = mapping.columns[0]
+        sid_col = mapping.columns[1]
+        placement_col = mapping.columns[2]
+        mask = (mapping[pid_col] == pid) & (mapping[sid_col] == sid)
     else:
-        mask = mapping['SENSOR_ID'] == sid
-    loc = mapping.loc[mask, 'LOCATION']
+        sid_col = mapping.columns[0]
+        placement_col = mapping.columns[1]
+        mask = mapping[sid_col] == sid
+    loc = mapping.loc[mask, placement_col]
     if loc.empty:
         return None
     else:
