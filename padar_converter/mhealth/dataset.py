@@ -283,6 +283,12 @@ def get_init_placement(filepath, mapping_file):
     return loc
 
 
+def get_placement_abbr(placement):
+    tokens = placement.split(' ')
+    tokens = list(map(lambda token: token[0].upper(), tokens))
+    return ''.join(tokens)
+
+
 def auto_init_placement(filepath):
     assert is_mhealth_filename(filepath)
     mapping_file = find_location_mapping(filepath)
