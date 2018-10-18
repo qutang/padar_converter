@@ -132,11 +132,13 @@ def get_orientation_correction(filepath):
     orientation_corrections_file = find_orientation_corrections(
         filepath)
     pid = get_pid(filepath)
+    sid = get_sid(filepath)
     if bool(orientation_corrections_file):
         orientation_corrections = fileio.load_orientation_corrections(
             orientation_corrections_file)
         orientation_correction = orientation_corrections.loc[
-            orientation_corrections.iloc[:, 0] == pid,
+            (orientation_corrections.iloc[:, 0] == pid) & (
+                orientation_corrections.iloc[:, 1] == sid),
             orientation_corrections.columns[3:6]
         ]
         if orientation_correction.empty:
