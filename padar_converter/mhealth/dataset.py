@@ -14,7 +14,7 @@ FILE_TIMESTAMP_PATTERN = r'[0-9]{4}(?:\-[0-9]{2}){5}-[0-9]{3}-(?:P|M)[0-9]{4}'
 FILE_EXTENSION_PATTERN = r'''
 (?:sensor|event|log|annotation|feature|class|prediction|model|classmap)\.csv
 '''
-MHEALTH_FLAT_FILEPATH_PATTERN = r'(\w+)[\/\\]{1}(?:(?:MasterSynced[\/\\]{1})|(?:Derived[\/\\]{1}(?:\w+[\/\\]{1})*))[0-9A-Za-z\-\.]+\.csv'
+MHEALTH_FLAT_FILEPATH_PATTERN = r'(\w+)[\/\\]{1}(?:(?:MasterSynced[\/\\]{1})|(?:Derived[\/\\]{1}(?:\w+[\/\\]{1})*))[0-9A-Za-z\-\.]+\.csv(\.gz)*'
 MHEALTH_FILEPATH_PATTERN = r'(\w+)[\/\\]{1}(?:(?:MasterSynced[\/\\]{1})|(?:Derived[\/\\]{1}(?:\w+[\/\\]{1})*))\d{4}[\/\\]{1}\d{2}[\/\\]{1}\d{2}[\/\\]{1}\d{2}'
 
 
@@ -157,11 +157,11 @@ def is_mhealth_filename(filepath):
         CAMELCASE_PATTERN + \
         '\-' + VERSIONCODE_PATTERN + '\.' + \
         SID_PATTERN + '\-' + CAMELCASE_PATTERN + '\.' + \
-        FILE_TIMESTAMP_PATTERN + '\.sensor\.csv$'
+        FILE_TIMESTAMP_PATTERN + '\.sensor\.csv(\.gz)*$'
 
     annotation_filename_pattern = '^' + CAMELCASE_PATTERN + '\.' + \
         ANNOTATOR_PATTERN + '\-' + CAMELCASE_PATTERN + '\.' + \
-        FILE_TIMESTAMP_PATTERN + '\.annotation\.csv$'
+        FILE_TIMESTAMP_PATTERN + '\.annotation\.csv(\.gz)*$'
 
     sensor_matched = re.search(
         sensor_filename_pattern,
@@ -226,15 +226,29 @@ def get_sid(filepath):
 def get_file_type(filepath):
     assert is_mhealth_filename(filepath)
     filename = os.path.basename(filepath)
-    return filename.split('.')[-2]
+    if filename.endswith('gz'):
+        return filename.split('.')[-3]
+    else:
+        return filename.split('.')[-2]
 
 
-def get_file_timestamp(filepath):
+def get_file_timestamp(filepath, ignore_tz=True):
     assert is_mhealth_filename(filepath)
     filename = os.path.basename(filepath)
-    timestamp_str = filename.split('.')[-3]
-    timestamp_str = timestamp_str[:-6]
-    return datetime.datetime.strptime(timestamp_str, '%Y-%m-%d-%H-%M-%S-%f')
+    if filename.endswith('gz'):
+        timestamp_index = -4
+    else:
+        timestamp_index = -3
+    timestamp_str = filename.split('.')[timestamp_index]
+    if ignore_tz:
+        timestamp_str = timestamp_str[:-6]
+        result = datetime.datetime.strptime(
+            timestamp_str, '%Y-%m-%d-%H-%M-%S-%f')
+    else:
+        timestamp_str = timestamp_str.replace('P', '+').replace('M', '-')
+        result = datetime.datetime.strptime(
+            timestamp_str, '%Y-%m-%d-%H-%M-%S-%f-%z')
+    return result
 
 
 def get_session_start_time(filepath, filepaths):
@@ -242,7 +256,7 @@ def get_session_start_time(filepath, filepaths):
     smallest = datetime.datetime.now()
     for path in filepaths:
         if get_pid(path) == pid:
-            timestamp = get_file_timestamp(path)
+            timestamp = get_file_timestamp(path, ignore_tz=True)
             if timestamp < smallest:
                 smallest = timestamp
     smallest = smallest.replace(microsecond=0, second=0, minute=0)
@@ -254,22 +268,24 @@ def get_session_end_time(filepath, filepaths):
     largest = datetime.datetime.fromtimestamp(100000)
     for path in filepaths:
         if get_pid(path) == pid:
-            timestamp = get_file_timestamp(path)
+            timestamp = get_file_timestamp(path, ignore_tz=True)
             if timestamp > largest:
                 largest = timestamp
-    largest = largest.replace(microsecond=0, second=0,
-                              minute=0) + datetime.timedelta(hours=1)
+    if largest.minute != 0 or largest.second != 0 or largest.microsecond != 0:
+        largest = largest.replace(microsecond=0, second=0,
+                                  minute=0) + datetime.timedelta(hours=1)
     return largest
 
 
 def get_timezone(filepath):
-    dt = get_file_timestamp(filepath)
+    dt = get_file_timestamp(filepath, ignore_tz=False)
     return dt.tzinfo
 
 
 def get_timezone_name(filepath):
-    dt = get_file_timestamp(filepath)
-    return dt.strftime('%Z')
+    dt = get_file_timestamp(filepath, ignore_tz=False)
+    tz_name = dt.strftime('%Z')
+    return tz_name
 
 
 def get_init_placement(filepath, mapping_file):
