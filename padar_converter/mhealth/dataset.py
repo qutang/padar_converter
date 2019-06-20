@@ -271,9 +271,8 @@ def get_session_end_time(filepath, filepaths):
             timestamp = get_file_timestamp(path, ignore_tz=True)
             if timestamp > largest:
                 largest = timestamp
-    if largest.minute != 0 or largest.second != 0 or largest.microsecond != 0:
-        largest = largest.replace(microsecond=0, second=0,
-                                  minute=0) + datetime.timedelta(hours=1)
+    largest = largest.replace(microsecond=0, second=0,
+                              minute=0) + datetime.timedelta(hours=1)
     return largest
 
 
