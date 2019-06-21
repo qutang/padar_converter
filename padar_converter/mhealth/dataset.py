@@ -49,7 +49,7 @@ def get_pid_root(filepath):
 def find_location_mapping(filepath):
     mhealth_root = get_mhealth_root(filepath)
     result = os.path.join(
-        mhealth_root, 'DerivedCrossParticipants', 'location_mapping.csv')
+        mhealth_root, 'MetaCrossParticipants', 'location_mapping.csv')
     if os.path.exists(result):
         return result
     else:
@@ -71,7 +71,7 @@ def find_offset_mapping(filepath):
     else:
         mhealth_root = get_mhealth_root(filepath)
         result = os.path.join(
-            mhealth_root, 'DerivedCrossParticipants', 'offset_mapping.csv')
+            mhealth_root, 'MetaCrossParticipants', 'offset_mapping.csv')
         if os.path.exists(result):
             return result
         else:
@@ -95,7 +95,7 @@ def get_offset(filepath, offset_column):
 def find_pid_exceptions(filepath):
     mhealth_root = get_mhealth_root(filepath)
     result = os.path.join(
-        mhealth_root, 'DerivedCrossParticipants', 'pid_exceptions.csv')
+        mhealth_root, 'MetaCrossParticipants', 'pid_exceptions.csv')
     if os.path.exists(result):
         return result
     else:
@@ -120,7 +120,7 @@ def find_orientation_corrections(filepath):
     else:
         mhealth_root = get_mhealth_root(filepath)
         result = os.path.join(
-            mhealth_root, 'DerivedCrossParticipants',
+            mhealth_root, 'MetaCrossParticipants',
             'orientation_corrections.csv')
         if os.path.exists(result):
             return result
