@@ -14,6 +14,10 @@ def to_inlab_activity_labels(annotation_labels, pid, st, et):
         if '3 mph' in label and 'arms on desk' in label and 'treadmill' in label:
             return "Level treadmill walking at 3 mph with arms on desk"
 
+    if 'stairs' in label and 'up' in label:
+        return 'Walking upstairs'
+    elif 'stairs' in label and 'down' in label:
+        return 'Walking downstairs'
     if 'mbta' in label or 'city' in label or 'outdoor' in label:
         return 'Unknown'
     if "sitting" in label and 'writing' in label:
